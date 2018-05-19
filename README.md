@@ -30,6 +30,7 @@ Thanks to the "global service" concept in Swarm mode we can run a service ensuri
 - `PORTAINER_ADDR`:  Name and port where Portainer is configured
 - `PORTAINER_USER`:  Username used to login to Portainer
 - `PORTAINER_PASS`:  Password used to login to Portainer
+- `SSL_IGNORE_CERTIFICATION_CHECK`: Activate it in case you don't want to validate the certificate in the Portainer service
 - `SLEEP_IF_WORKER`: Seconds to wait before register the node if it's a worker
 
 The `SLEEP_IF_WORKER` is useful to avoid that a worker is the first to register to Portainer, because it loads by default
@@ -45,7 +46,7 @@ docker container run \
   --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
   --mount type=bind,source=/etc/hostname,target=/etc/host_hostname \
   --network portainer \
-  -e HOST_HOSTNAME=/etc/host_hostname \
+  --hostname="{{.Node.Hostname}} \
   -e PORTAINER_ADDR=portainer:9000 \
   -e PORTAINER_USER=admin \
   -e PORTAINER_PASS=12341234 \
@@ -61,9 +62,9 @@ docker service create --with-registry-auth \
   --name portainer-endpoint \
   --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
   --mount type=bind,source=/etc/hostname,target=/etc/host_hostname \
+  --hostname="{{.Node.Hostname}} \
   --network portainer \
   --mode global \
-  -e HOST_HOSTNAME=/etc/host_hostname \
   -e PORTAINER_ADDR=portainer:9000 \
   -e PORTAINER_USER=admin \
   -e PORTAINER_PASS=12341234 \
@@ -89,6 +90,7 @@ You'll see all the nodes in your cluster are already registered.
 
 #### Requirements
 
-- It needs Docker >17.04 because of the version of the stack file.
-- In this example I'm using a secret for the Portainer password in the endpoints.
-- Its usage is optional, you can use the environment variable with the password in clear text (not recommended).
+- It needs Docker >17.04 because of the version of the stack file
+- It needs Docker >17.10.0 for get rid of the host name mounted as a volume (`--mount type=bind,source=/etc/hostname,target=/etc/host_hostname`) and the `-e HOST_HOSTNAME=/etc/host_hostname` variable. 
+- In this example I'm using a secret for the Portainer password in the endpoints
+- Its usage is optional, you can use the environment variable with the password in clear text (not recommended)
